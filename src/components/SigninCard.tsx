@@ -15,17 +15,15 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { useState } from "react"
 
-export default function SignupCard() {
+export default function SigninCard() {
     const [formData, setFormData] = useState({
-        name: "",
         email: "",
         password: "",
-        mobile: "",
     });
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/signup`, formData).then((res) => {
-            router.push("/login");
+        axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/signin`, formData).then((res) => {
+            router.push("/dashboard");
         });
     }
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -35,16 +33,12 @@ export default function SignupCard() {
     return (
         <Card className="w-[350px]">
             <CardHeader>
-                <CardTitle>Welcome to BookSwap</CardTitle>
-                <CardDescription>Create an account to get started</CardDescription>
+                <CardTitle>Welcome back to BookSwap</CardTitle>
+                <CardDescription>Sign in to your account to continue</CardDescription>
             </CardHeader>
             <CardContent>
                 <form onSubmit={handleSubmit}>
                     <div className="grid w-full items-center gap-4">
-                        <div className="flex flex-col space-y-1.5">
-                            <Label htmlFor="name">Name</Label>
-                            <Input id="name" name="name" placeholder="Enter your name" onChange={handleChange} />
-                        </div>
                         <div className="flex flex-col space-y-1.5">
                             <Label htmlFor="email">Email</Label>
                             <Input id="email" name="email" placeholder="Enter your email" onChange={handleChange} />
@@ -53,12 +47,8 @@ export default function SignupCard() {
                             <Label htmlFor="password">Password</Label>
                             <Input id="password" name="password" placeholder="Enter your password" onChange={handleChange} />
                         </div>
-                        <div className="flex flex-col space-y-1.5">
-                            <Label htmlFor="mobile">Mobile</Label>
-                            <Input id="mobile" name="mobile" placeholder="Enter your mobile number" onChange={handleChange} />
-                        </div>
                     </div>
-                    <Button type="submit">Sign Up</Button>
+                    <Button type="submit">Sign In</Button>
                 </form>
             </CardContent>
             <CardFooter className="flex justify-between">
