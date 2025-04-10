@@ -2,8 +2,9 @@
 import { motion } from 'framer-motion';
 import { Book, Users, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
+import { useRouter } from 'next/navigation';
 function Home() {
+  const router = useRouter();
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary">
       <div className="container mx-auto px-4 py-16">
@@ -17,8 +18,8 @@ function Home() {
             <span className="text-xl font-bold">BookSwap</span>
           </motion.div>
           <div className="flex gap-4">
-            <Button variant="ghost">Login</Button>
-            <Button>Sign Up</Button>
+            <Button variant="ghost" onClick={() => router.push('/login')}>Login</Button>
+            <Button onClick={() => router.push('/signup')}>Sign Up</Button>
           </div>
         </nav>
 
