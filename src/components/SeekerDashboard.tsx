@@ -17,12 +17,14 @@ import { Book } from './OwnerDashboard';
 export default function BookSeekerPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedGenre, setSelectedGenre] = useState('all');
+    const [selectedLocation, setSelectedLocation] = useState('all');
     const [books, setBooks] = useState<Book[]>([]);
     const filteredBooks = books.filter(book => {
         const matchesSearch = book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
             book.author.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesGenre = selectedGenre === 'all' || book.genre === selectedGenre;
-        return matchesSearch && matchesGenre;
+        const location = selectedLocation === "all" || book?.location?.toLowerCase().includes(selectedLocation.toLowerCase());
+        return matchesSearch && matchesGenre && location;
     });
 
     useEffect(() => {
@@ -95,6 +97,19 @@ export default function BookSeekerPage() {
                                 <SelectItem value="Science Fiction">Science Fiction</SelectItem>
                                 <SelectItem value="Mystery">Mystery</SelectItem>
                                 <SelectItem value="Romance">Romance</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <Select value={selectedLocation} onValueChange={setSelectedLocation}>
+                            <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="All Locations" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Locations</SelectItem>
+                                <SelectItem value="Bengaluru">Bengaluru</SelectItem>
+                                <SelectItem value="Kolkata">Kolkata</SelectItem>
+                                <SelectItem value="Mumbai">Mumbai</SelectItem>
+                                <SelectItem value="Delhi">Delhi</SelectItem>
+                                <SelectItem value="Chennai">Chennai</SelectItem>
                             </SelectContent>
                         </Select>
                     </motion.div>
