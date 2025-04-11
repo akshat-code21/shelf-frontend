@@ -2,7 +2,9 @@
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, BookOpen } from 'lucide-react';
+import { PlusCircle, BookOpen, Edit, Trash2 } from 'lucide-react';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { MapPin } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import axios from 'axios';
 
@@ -10,13 +12,15 @@ export interface Book {
     id: string;
     title: string;
     author: string;
-    genre: string;
-    condition: string;
-    location: string;
+    genre?: string;
+    location?: string;
     contact: string;
     status: string;
-    description: string;
     image?: string;
+    owner?: {
+        name: string;
+    };
+    ownerId?: string;
 }
 
 export default function OwnerDashboard() {
@@ -29,7 +33,7 @@ export default function OwnerDashboard() {
         location: '',
         contact: '',
         status: '',
-    })
+    });
     const fetchBooks = async () => {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/books`);
         const data = await response.json();
@@ -58,6 +62,30 @@ export default function OwnerDashboard() {
             fetchBooks();
         }
     };
+    const handleDelete = async (id: string) => {
+        try {
+            const res = await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/books/${id}`, {
+                withCredentials: true
+            });
+            if (res.status === 200) {
+                fetchBooks();
+            }
+        } catch (error) {
+            console.error("Error deleting book:", error);
+        }
+    };
+
+    const handleEdit = (book: Book) => {
+        setFormData({
+            title: book.title,
+            author: book.author,
+            genre: book.genre || '',
+            location: book.location || '',
+            contact: book.contact,
+            status: book.status,
+        });
+        setShowForm(true);
+    };
 
     useEffect(() => {
         fetchBooks();
@@ -70,7 +98,7 @@ export default function OwnerDashboard() {
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="max-w-4xl mx-auto"
+                    className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
                 >
                     <div className="flex justify-between items-center mb-8">
                         <div>
@@ -204,35 +232,80 @@ export default function OwnerDashboard() {
                         </motion.div>
                     )}
 
-                    <div className="grid gap-6">
-                        {books.map((book) => (
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {books.map((book, index) => (
                             <motion.div
                                 key={book.id}
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                className="bg-card p-6 rounded-lg shadow-lg flex items-start gap-4"
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: index * 0.1 }}
+                                whileHover={{ y: -5 }}
                             >
-                                <div className="flex-shrink-0">
-                                    <BookOpen className="h-12 w-12 text-primary" />
-                                </div>
-                                <div className="flex-grow">
-                                    <h3 className="text-xl font-semibold">{book.title}</h3>
-                                    <p className="text-muted-foreground">by {book.author}</p>
-                                    <div className="flex gap-2 mt-2">
-                                        <span className="px-2 py-1 bg-primary/10 rounded-full text-sm">
-                                            {book.genre}
-                                        </span>
-                                        <span className="px-2 py-1 bg-primary/10 rounded-full text-sm">
-                                            {book.condition}
-                                        </span>
+                                <Card className="overflow-hidden border-border/50 hover:border-primary/50 transition-all duration-300">
+                                    <div className="relative h-48 overflow-hidden bg-primary/10">
+                                        {book.image ? (
+                                            <img
+                                                src={book.image}
+                                                alt={book.title}
+                                                className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center">
+                                                <BookOpen className="h-20 w-20 text-primary/60" />
+                                            </div>
+                                        )}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                                     </div>
-                                    <p className="mt-2">{book.description}</p>
-                                </div>
+                                    <CardHeader>
+                                        <h3 className="text-xl font-semibold line-clamp-1">{book.title}</h3>
+                                        <p className="text-muted-foreground">by {book.author}</p>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="flex flex-wrap gap-2 mb-4">
+                                            <span className="px-3 py-1 bg-primary/10 rounded-full text-sm font-medium text-primary">
+                                                {book.genre}
+                                            </span>
+                                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${book.status === 'AVAILABLE'
+                                                    ? 'bg-green-100 text-green-700'
+                                                    : 'bg-red-100 text-red-700'
+                                                }`}>
+                                                {book.status === 'AVAILABLE' ? 'Available' : 'Unavailable'}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                            <MapPin className="h-4 w-4" />
+                                            {book.location}
+                                        </div>
+                                    </CardContent>
+                                    <CardFooter className="flex justify-between items-center">
+                                        <span className="text-sm text-muted-foreground">
+                                            Contact: {book.contact}
+                                        </span>
+                                        <div className="flex gap-2">
+                                            <Button
+                                                variant="outline"
+                                                size="icon"
+                                                onClick={() => handleEdit(book)}
+                                                className="h-8 w-8"
+                                            >
+                                                <Edit className="h-4 w-4" />
+                                            </Button>
+                                            <Button
+                                                variant="destructive"
+                                                size="icon"
+                                                onClick={() => handleDelete(book.id)}
+                                                className="h-8 w-8"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </CardFooter>
+                                </Card>
                             </motion.div>
                         ))}
 
                         {books.length === 0 && (
-                            <div className="text-center py-12 text-muted-foreground">
+                            <div className="text-center py-12 text-muted-foreground col-span-3">
                                 <BookOpen className="h-16 w-16 mx-auto mb-4 opacity-50" />
                                 <p className="text-lg">You haven't added any books yet.</p>
                                 <p>Click the "Add New Book" button to get started!</p>

@@ -1,7 +1,6 @@
 "use client";
 import { motion } from 'framer-motion';
-import { use, useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { useEffect, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { BookOpen, MapPin } from 'lucide-react';
@@ -15,8 +14,6 @@ import {
 import axios from 'axios';
 import Navbar from './Navbar';
 import { Book } from './OwnerDashboard';
-
-
 export default function BookSeekerPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedGenre, setSelectedGenre] = useState('all');
@@ -30,11 +27,15 @@ export default function BookSeekerPage() {
 
     useEffect(() => {
         const fetchBooks = async () => {
-            const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/books`, {
-                withCredentials: true
-            });
-            setBooks(res.data);
-            console.log(res);
+            try {
+                const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/books`, {
+                    withCredentials: true
+                });
+                setBooks(res.data);
+                console.log(res);
+            } catch (error) {
+                console.error("Error fetching books:", error);
+            }
         }
         fetchBooks();
     }, []);
@@ -125,11 +126,13 @@ export default function BookSeekerPage() {
                                             <span className="px-3 py-1 bg-primary/10 rounded-full text-sm font-medium text-primary">
                                                 {book.genre}
                                             </span>
-                                            <span className="px-3 py-1 bg-secondary/10 rounded-full text-sm font-medium text-secondary">
-                                                {book.condition}
+                                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${book.status === 'AVAILABLE'
+                                                ? 'bg-green-100 text-green-700'
+                                                : 'bg-red-100 text-red-700'
+                                                }`}>
+                                                {book.status === 'AVAILABLE' ? 'Available' : 'Unavailable'}
                                             </span>
                                         </div>
-                                        <p className="text-sm text-muted-foreground line-clamp-2 mb-4">{book.description}</p>
                                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                             <MapPin className="h-4 w-4" />
                                             {book.location}
@@ -137,9 +140,8 @@ export default function BookSeekerPage() {
                                     </CardContent>
                                     <CardFooter className="flex justify-between items-center">
                                         <span className="text-sm text-muted-foreground">
-                                            Shared by {book.author}
+                                            Shared by {book.owner?.name || 'Unknown'}
                                         </span>
-                                        <Button>Request Book</Button>
                                     </CardFooter>
                                 </Card>
                             </motion.div>
