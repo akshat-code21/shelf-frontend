@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
+  request: NextRequest
 ) {
-  const cookieHeader = req.headers.get('cookie');
-  const id = params.id;
+  const id = request.url.split('/').pop();
+  const cookieHeader = request.headers.get('cookie');
   
   const headers: Record<string, string> = {
     'Accept': 'application/json'
@@ -34,13 +33,13 @@ export async function DELETE(
   console.log('Book API: Data received:', data);
   return NextResponse.json(data);
 } 
+
 export async function PUT(
-    req: NextRequest,
-    { params }: { params: { id: string } }
+    request: NextRequest
 ) {
-    const cookieHeader = req.headers.get('cookie');
-    const id = params.id;
-    const { title, author, genre, location, contact, status } = await req.json();
+    const id = request.url.split('/').pop();
+    const cookieHeader = request.headers.get('cookie');
+    const { title, author, genre, location, contact, status } = await request.json();
     
     const headers: Record<string, string> = {
         'Content-Type': 'application/json',
