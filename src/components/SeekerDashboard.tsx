@@ -1,6 +1,6 @@
 "use client";
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
@@ -12,54 +12,32 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import axios from 'axios';
 import Navbar from './Navbar';
+import { Book } from './OwnerDashboard';
 
-const sampleBooks = [
-    {
-        id: 1,
-        title: "The Great Gatsby",
-        author: "F. Scott Fitzgerald",
-        genre: "Fiction",
-        condition: "Very Good",
-        location: "New York, NY",
-        owner: "John Doe",
-        description: "A classic novel about the American Dream in the Roaring Twenties.",
-        image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80"
-    },
-    {
-        id: 2,
-        title: "Dune",
-        author: "Frank Herbert",
-        genre: "Science Fiction",
-        condition: "Like New",
-        location: "Los Angeles, CA",
-        owner: "Jane Smith",
-        description: "The epic science fiction masterpiece about a desert planet and its people.",
-        image: "https://images.unsplash.com/photo-1531988042231-d39a9cc12a9a?auto=format&fit=crop&q=80"
-    },
-    {
-        id: 3,
-        title: "Sapiens",
-        author: "Yuval Noah Harari",
-        genre: "Non-Fiction",
-        condition: "Good",
-        location: "Chicago, IL",
-        owner: "Mike Johnson",
-        description: "A brief history of humankind exploring how we became the dominant species.",
-        image: "https://images.unsplash.com/photo-1589998059171-988d887df646?auto=format&fit=crop&q=80"
-    }
-];
 
 export default function BookSeekerPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedGenre, setSelectedGenre] = useState('all');
-
-    const filteredBooks = sampleBooks.filter(book => {
+    const [books, setBooks] = useState<Book[]>([]);
+    const filteredBooks = books.filter(book => {
         const matchesSearch = book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
             book.author.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesGenre = selectedGenre === 'all' || book.genre === selectedGenre;
         return matchesSearch && matchesGenre;
     });
+
+    useEffect(() => {
+        const fetchBooks = async () => {
+            const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/books`, {
+                withCredentials: true
+            });
+            setBooks(res.data);
+            console.log(res);
+        }
+        fetchBooks();
+    }, []);
 
     return (
         <>
@@ -159,7 +137,7 @@ export default function BookSeekerPage() {
                                     </CardContent>
                                     <CardFooter className="flex justify-between items-center">
                                         <span className="text-sm text-muted-foreground">
-                                            Shared by {book.owner}
+                                            Shared by {book.author}
                                         </span>
                                         <Button>Request Book</Button>
                                     </CardFooter>

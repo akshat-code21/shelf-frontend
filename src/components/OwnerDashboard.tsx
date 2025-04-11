@@ -1,38 +1,67 @@
 "use client";
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, BookOpen } from 'lucide-react';
 import Navbar from '@/components/Navbar';
+import axios from 'axios';
 
-interface Book {
-    id: number;
+export interface Book {
+    id: string;
     title: string;
     author: string;
     genre: string;
     condition: string;
+    location: string;
+    contact: string;
+    status: string;
     description: string;
+    image?: string;
 }
 
 export default function OwnerDashboard() {
     const [books, setBooks] = useState<Book[]>([]);
     const [showForm, setShowForm] = useState(false);
-
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        const formData = new FormData(e.currentTarget);
-        const newBook = {
-            id: Date.now(),
-            title: formData.get('title') as string,
-            author: formData.get('author') as string,
-            genre: formData.get('genre') as string,
-            condition: formData.get('condition') as string,
-            description: formData.get('description') as string,
-        };
-        setBooks([...books, newBook]);
-        setShowForm(false);
-        e.currentTarget.reset();
+    const [formData, setFormData] = useState({
+        title: '',
+        author: '',
+        genre: '',
+        location: '',
+        contact: '',
+        status: '',
+    })
+    const fetchBooks = async () => {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/books`);
+        const data = await response.json();
+        setBooks(data);
     };
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLSelectElement> |
+        React.ChangeEvent<HTMLTextAreaElement>) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const newBook = {
+            title: formData.title,
+            author: formData.author,
+            genre: formData.genre,
+            location: formData.location,
+            contact: formData.contact,
+            status: formData.status
+        };
+        const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/books`, newBook, {
+            withCredentials: true
+        });
+        console.log(res);
+        if (res.status === 200) {
+            setShowForm(false);
+            fetchBooks();
+        }
+    };
+
+    useEffect(() => {
+        fetchBooks();
+    }, []);
 
     return (
         <>
@@ -70,6 +99,7 @@ export default function OwnerDashboard() {
                                             name="title"
                                             required
                                             className="w-full p-2 rounded-md border border-input bg-background"
+                                            onChange={handleChange}
                                         />
                                     </div>
                                     <div>
@@ -79,6 +109,7 @@ export default function OwnerDashboard() {
                                             name="author"
                                             required
                                             className="w-full p-2 rounded-md border border-input bg-background"
+                                            onChange={handleChange}
                                         />
                                     </div>
                                 </div>
@@ -89,6 +120,7 @@ export default function OwnerDashboard() {
                                             name="genre"
                                             required
                                             className="w-full p-2 rounded-md border border-input bg-background"
+                                            onChange={handleChange}
                                         >
                                             <option value="">Select Genre</option>
                                             <option value="Fiction">Fiction</option>
@@ -105,6 +137,7 @@ export default function OwnerDashboard() {
                                             name="condition"
                                             required
                                             className="w-full p-2 rounded-md border border-input bg-background"
+                                            onChange={handleChange}
                                         >
                                             <option value="">Select Condition</option>
                                             <option value="New">New</option>
@@ -115,13 +148,51 @@ export default function OwnerDashboard() {
                                         </select>
                                     </div>
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-medium mb-1">Description</label>
-                                    <textarea
-                                        name="description"
-                                        rows={3}
-                                        className="w-full p-2 rounded-md border border-input bg-background"
-                                    ></textarea>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium mb-1">Location</label>
+                                        <input
+                                            type="text"
+                                            name="location"
+                                            required
+                                            className="w-full p-2 rounded-md border border-input bg-background"
+                                            onChange={handleChange}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium mb-1">Contact</label>
+                                        <input
+                                            type="text"
+                                            name="contact"
+                                            required
+                                            className="w-full p-2 rounded-md border border-input bg-background"
+                                            onChange={handleChange}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium mb-1">Status</label>
+                                        <select
+                                            name="status"
+                                            required
+                                            className="w-full p-2 rounded-md border border-input bg-background"
+                                            onChange={handleChange}
+                                        >
+                                            <option value="">Select Status</option>
+                                            <option value="AVAILABLE">Available</option>
+                                            <option value="UNAVAILABLE">Unavailable</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium mb-1">Description</label>
+                                        <textarea
+                                            name="description"
+                                            rows={3}
+                                            className="w-full p-2 rounded-md border border-input bg-background"
+                                            onChange={handleChange}
+                                        ></textarea>
+                                    </div>
                                 </div>
                                 <div className="flex justify-end gap-2">
                                     <Button type="button" variant="ghost" onClick={() => setShowForm(false)}>

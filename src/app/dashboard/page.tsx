@@ -9,5 +9,5 @@ export default function DashboardPage() {
   if (loading) return <p>Loading...</p>;
   if (!user) return <p>Unauthorized. Please log in.</p>;
 
-  return user.role === "OWNER" ? <OwnerDashboard /> : <SeekerDashboard />;
+  return user.role === "ADMIN" ? <OwnerDashboard /> : <SeekerDashboard />;
 }

@@ -44,5 +44,5 @@ export default function useUser() {
         fetchUser();
     }, []);
 
-    return { user, loading };
+    return { user, loading, setUser };
 }
