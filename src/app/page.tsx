@@ -1,11 +1,15 @@
 "use client"
-import { motion, useAnimate } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Book, Users, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import useUser from './hooks/useUser';
+import axios from 'axios';
 
 function Home() {
+  const {user,loading,setUser} = useUser();
   const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
 
@@ -14,9 +18,19 @@ function Home() {
   }, []);
 
   if (!isMounted) {
-    return null; // or a loading state
+    return null; 
   }
-
+  const handleLogout = async () => {
+    try {
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/logout`, {}, {
+        withCredentials: true
+      });
+      setUser(null);
+      router.push("/");
+    } catch (err) {
+      console.error("Logout failed", err);
+    }
+  };
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary">
       <div className="container mx-auto px-4 py-16">
@@ -30,9 +44,24 @@ function Home() {
             <span className="text-xl font-bold">BookSwap</span>
           </motion.div>
           <div className="flex gap-4">
-            <Button variant="ghost" onClick={() => router.push('/login')}>Login</Button>
-            <Button onClick={() => router.push('/signup')}>Sign Up</Button>
-          </div>
+            {user && user.role === "OWNER" && (
+              <Link href="/add">
+                <Button variant="ghost">List Books</Button>
+              </Link>
+            )}
+              <Link href="/dashboard">
+                <Button variant="ghost" className='cursor-pointer' onClick={() => router.push("/dashboard")}>Find Books</Button>
+              </Link>
+              {user && (
+                <Button variant="default" className='cursor-pointer' onClick={handleLogout}>Logout</Button>
+              )}
+              {!user && (
+                <>
+                  <Button variant="ghost" className='cursor-pointer' onClick={() => router.push("/login")}>Login</Button>
+                  <Button className='cursor-pointer' onClick={() => router.push("/signup")}>Sign Up</Button>
+                </>
+              )}
+            </div>
         </nav>
 
         <div className="grid md:grid-cols-2 gap-12 items-center">
@@ -49,10 +78,10 @@ function Home() {
               Join our community of book lovers. Exchange your books with others
               and discover new stories without spending a dime.
             </p>
-            <Button size="lg" className="mr-4">
+            <Button size="lg" className="cursor-pointer mr-4" onClick={() => router.push("/dashboard")}>
               Start Exchanging
             </Button>
-            <Button variant="outline" size="lg">
+            <Button variant="outline" size="lg" >
               Learn More
             </Button>
           </motion.div>
@@ -107,5 +136,4 @@ function Home() {
     </div>
   );
 }
-
 export default Home;
