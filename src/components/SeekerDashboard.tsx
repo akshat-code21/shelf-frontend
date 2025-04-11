@@ -126,7 +126,7 @@ export default function BookSeekerPage() {
                                 <Card className="cursor-pointer overflow-hidden border-border/50 hover:border-primary/50 transition-all duration-300">
                                     <div className="relative h-48 overflow-hidden">
                                         <img
-                                            src={book.image}
+                                            src={book.image ?? "https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=2996&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"}
                                             alt={book.title}
                                             className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                                         />
