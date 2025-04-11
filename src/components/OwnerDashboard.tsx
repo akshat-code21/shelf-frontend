@@ -26,6 +26,8 @@ export interface Book {
 export default function OwnerDashboard() {
     const [books, setBooks] = useState<Book[]>([]);
     const [showForm, setShowForm] = useState(false);
+    const [editMode, setEditMode] = useState(false);
+    const [currentBookId, setCurrentBookId] = useState<string | null>(null);
     const [formData, setFormData] = useState({
         title: '',
         author: '',
@@ -45,7 +47,7 @@ export default function OwnerDashboard() {
     };
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const newBook = {
+        const bookData = {
             title: formData.title,
             author: formData.author,
             genre: formData.genre,
@@ -53,12 +55,31 @@ export default function OwnerDashboard() {
             contact: formData.contact,
             status: formData.status
         };
-        const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/books`, newBook, {
-            withCredentials: true
-        });
+
+        let res;
+        if (editMode && currentBookId) {
+            res = await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/books/${currentBookId}`, bookData, {
+                withCredentials: true
+            });
+        } else {
+            res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/books`, bookData, {
+                withCredentials: true
+            });
+        }
+
         console.log(res);
         if (res.status === 200) {
             setShowForm(false);
+            setEditMode(false);
+            setCurrentBookId(null);
+            setFormData({
+                title: '',
+                author: '',
+                genre: '',
+                location: '',
+                contact: '',
+                status: '',
+            });
             fetchBooks();
         }
     };
@@ -84,6 +105,22 @@ export default function OwnerDashboard() {
             contact: book.contact,
             status: book.status,
         });
+        setCurrentBookId(book.id);
+        setEditMode(true);
+        setShowForm(true);
+    };
+
+    const handleAddNew = () => {
+        setFormData({
+            title: '',
+            author: '',
+            genre: '',
+            location: '',
+            contact: '',
+            status: '',
+        });
+        setEditMode(false);
+        setCurrentBookId(null);
         setShowForm(true);
     };
 
@@ -105,7 +142,7 @@ export default function OwnerDashboard() {
                             <h1 className="text-4xl font-bold mb-2">Your Book Collection</h1>
                             <p className="text-muted-foreground">Share your books with the community</p>
                         </div>
-                        <Button onClick={() => setShowForm(true)} className="flex items-center gap-2">
+                        <Button onClick={handleAddNew} className="flex items-center gap-2">
                             <PlusCircle className="h-5 w-5" />
                             Add New Book
                         </Button>
@@ -117,7 +154,7 @@ export default function OwnerDashboard() {
                             animate={{ opacity: 1, y: 0 }}
                             className="bg-card p-6 rounded-lg shadow-lg mb-8"
                         >
-                            <h2 className="text-2xl font-semibold mb-4">Add a New Book</h2>
+                            <h2 className="text-2xl font-semibold mb-4">{editMode ? 'Edit Book' : 'Add a New Book'}</h2>
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
@@ -128,6 +165,7 @@ export default function OwnerDashboard() {
                                             required
                                             className="w-full p-2 rounded-md border border-input bg-background"
                                             onChange={handleChange}
+                                            value={formData.title}
                                         />
                                     </div>
                                     <div>
@@ -138,6 +176,7 @@ export default function OwnerDashboard() {
                                             required
                                             className="w-full p-2 rounded-md border border-input bg-background"
                                             onChange={handleChange}
+                                            value={formData.author}
                                         />
                                     </div>
                                 </div>
@@ -149,6 +188,7 @@ export default function OwnerDashboard() {
                                             required
                                             className="w-full p-2 rounded-md border border-input bg-background"
                                             onChange={handleChange}
+                                            value={formData.genre}
                                         >
                                             <option value="">Select Genre</option>
                                             <option value="Fiction">Fiction</option>
@@ -160,19 +200,17 @@ export default function OwnerDashboard() {
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium mb-1">Condition</label>
+                                        <label className="block text-sm font-medium mb-1">Status</label>
                                         <select
-                                            name="condition"
+                                            name="status"
                                             required
                                             className="w-full p-2 rounded-md border border-input bg-background"
                                             onChange={handleChange}
+                                            value={formData.status}
                                         >
-                                            <option value="">Select Condition</option>
-                                            <option value="New">New</option>
-                                            <option value="Like New">Like New</option>
-                                            <option value="Very Good">Very Good</option>
-                                            <option value="Good">Good</option>
-                                            <option value="Fair">Fair</option>
+                                            <option value="">Select Status</option>
+                                            <option value="AVAILABLE">Available</option>
+                                            <option value="UNAVAILABLE">Unavailable</option>
                                         </select>
                                     </div>
                                 </div>
@@ -185,6 +223,7 @@ export default function OwnerDashboard() {
                                             required
                                             className="w-full p-2 rounded-md border border-input bg-background"
                                             onChange={handleChange}
+                                            value={formData.location}
                                         />
                                     </div>
                                     <div>
@@ -195,38 +234,15 @@ export default function OwnerDashboard() {
                                             required
                                             className="w-full p-2 rounded-md border border-input bg-background"
                                             onChange={handleChange}
+                                            value={formData.contact}
                                         />
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium mb-1">Status</label>
-                                        <select
-                                            name="status"
-                                            required
-                                            className="w-full p-2 rounded-md border border-input bg-background"
-                                            onChange={handleChange}
-                                        >
-                                            <option value="">Select Status</option>
-                                            <option value="AVAILABLE">Available</option>
-                                            <option value="UNAVAILABLE">Unavailable</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium mb-1">Description</label>
-                                        <textarea
-                                            name="description"
-                                            rows={3}
-                                            className="w-full p-2 rounded-md border border-input bg-background"
-                                            onChange={handleChange}
-                                        ></textarea>
                                     </div>
                                 </div>
                                 <div className="flex justify-end gap-2">
                                     <Button type="button" variant="ghost" onClick={() => setShowForm(false)}>
                                         Cancel
                                     </Button>
-                                    <Button type="submit">Add Book</Button>
+                                    <Button type="submit">{editMode ? 'Update Book' : 'Add Book'}</Button>
                                 </div>
                             </form>
                         </motion.div>
@@ -266,8 +282,8 @@ export default function OwnerDashboard() {
                                                 {book.genre}
                                             </span>
                                             <span className={`px-3 py-1 rounded-full text-sm font-medium ${book.status === 'AVAILABLE'
-                                                    ? 'bg-green-100 text-green-700'
-                                                    : 'bg-red-100 text-red-700'
+                                                ? 'bg-green-100 text-green-700'
+                                                : 'bg-red-100 text-red-700'
                                                 }`}>
                                                 {book.status === 'AVAILABLE' ? 'Available' : 'Unavailable'}
                                             </span>
