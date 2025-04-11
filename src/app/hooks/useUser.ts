@@ -1,4 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+
+import { useState } from "react";
 
 export default function useUser() {
     const [user, setUser] = useState<{ email: string; role: string } | null>(null);
@@ -7,21 +9,32 @@ export default function useUser() {
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user`, {
+                const res = await fetch("/api/user", {
+                    method: "GET",
                     credentials: "include",
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
                 });
-                
+
+
+
                 if (!res.ok) {
-                    throw new Error("Unauthorized");
+                    if (res.status === 401) {
+                        console.log('useUser: Unauthorized (401) - No valid session');
+                        setUser(null);
+                        return;
+                    }
+                    throw new Error("Failed to fetch user data");
                 }
 
                 const data = await res.json();
-                setUser(data);
+
+                if (data && data.email && data.role) {
+                    setUser(data);
+                } else {
+                    console.log('useUser: Invalid user data format');
+                    setUser(null);
+                }
             } catch (err) {
-                console.error('Error in useUser:', err);
+                console.error("Error in useUser:", err);
                 setUser(null);
             } finally {
                 setLoading(false);
