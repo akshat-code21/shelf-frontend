@@ -1,10 +1,22 @@
 "use client"
-import { motion } from 'framer-motion';
+import { motion, useAnimate } from 'framer-motion';
 import { Book, Users, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+
 function Home() {
   const router = useRouter();
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    return null; // or a loading state
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary">
       <div className="container mx-auto px-4 py-16">
