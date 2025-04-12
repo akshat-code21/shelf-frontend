@@ -81,6 +81,10 @@ BookSwap is a platform that allows users to share and exchange books with other 
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
+## To be Implemented
+- Option for user to upload their book images
+- Dark Mode compatibility
+
 ## License
 
 This project is licensed under the MIT License.
