@@ -32,7 +32,7 @@ BookSwap is a platform that allows users to share and exchange books with other 
 
 1. Clone the repository
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/<your-username>/shelf-frontend.git
    cd shelf-frontend
    ```
 
